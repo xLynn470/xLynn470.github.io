@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Shop</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        .product, .cart {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .product img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+        .cart {
+            margin-top: 20px;
+            padding: 20px;
+        }
+        .cart-items {
+            list-style: none;
+            padding: 0;
+        }
+        .checkout-btn {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: green;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Online Shop</h1>
+    <div class="container" id="products"></div>
+
+    <h2>Keranjang</h2>
+    <div class="cart">
+        <ul id="cart-items" class="cart-items"></ul>
+        <p>Total: $<span id="total-price">0</span></p>
+        <button class="checkout-btn" onclick="checkout()">Checkout via WhatsApp</button>
+    </div>
+
+    <script>
+        let cart = [];
+        const whatsappNumber = "085283839615"; // Ganti dengan nomor WhatsApp tujuan
+
+        function addToCart(product) {
+            cart.push(product);
+            updateCart();
+        }
+
+        function updateCart() {
+            const cartItems = document.getElementById("cart-items");
+            const totalPrice = document.getElementById("total-price");
+            cartItems.innerHTML = "";
+            let total = 0;
+            cart.forEach(item => {
+                total += item.price;
+                const li = document.createElement("li");
+                li.textContent = `${item.name} - $${item.price}`;
+                cartItems.appendChild(li);
+            });
+            totalPrice.textContent = total;
+        }
+
+        function checkout() {
+            if (cart.length === 0) {
+                alert("Keranjang Anda kosong!");
+                return;
+            }
+            let message = "Halo, saya ingin membeli:\n";
+            cart.forEach(item => {
+                message += `- ${item.name} ($${item.price})\n`;
+            });
+            message += `Total: $${document.getElementById("total-price").textContent}`;
+            let whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, "_blank");
+        }
+
+        fetch("https://67a0a6975bcfff4fabe01826.mockapi.io/api/products")
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById("products");
+                data.forEach(product => {
+                    const productElement = document.createElement("div");
+                    productElement.classList.add("product");
+                    productElement.innerHTML = `
+                        <img src="${product.image}" alt="${product.name}">
+                        <h2>${product.name}</h2>
+                        <p>Harga: $${product.price}</p>
+                        <button onclick='addToCart(${JSON.stringify(product)})'>Tambah ke Keranjang</button>
+                    `;
+                    container.appendChild(productElement);
+                });
+            })
+            .catch(error => console.error("Error fetching data:", error));
+    </script>
+</body>
+</html>
